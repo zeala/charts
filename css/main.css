@@ -29,6 +29,12 @@ path{
     stroke-width: 0;
 }
 
+.area2{
+    fill: indianred;
+    opacity: 0.1;
+    stroke-width: 0;
+}
+
 .areaAbove{
     fill: cornsilk;
     opacity: 0.3;

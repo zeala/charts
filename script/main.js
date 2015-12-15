@@ -5,32 +5,39 @@ var margin = {top: 30, right: 40, bottom: 30, left: 50},
 var parseDate = d3.time.format("%d-%b-%y").parse;
 
 var x = d3.time.scale().range([0, width]);
-var y = d3.scale.linear().range([height, 0]);
+var y0 = d3.scale.linear().range([height, 0]);
+var y1 = d3.scale.linear().range([height, 0]);
 
 console.log("x " + x);
-console.log("y : " + y);
+console.log("y : " + y0);
 
 var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(5);
-var yAxis = d3.svg.axis().scale(y).orient("left").ticks(5);
+var yAxisLeft = d3.svg.axis().scale(y0).orient("left").ticks(5);
+var yAxisRight = d3.svg.axis().scale(y1).orient("right").ticks(5);
 
 var area = d3.svg.area()
     .x(function(d) { return x(d.date);})
     .y0(height)
-    .y1(function(d){ return y(d.close);});
+    .y1(function(d){ return y0(d.close);});
+
+var area2 = d3.svg.area()
+    .x(function(d) { return x(d.date);})
+    .y0(height)
+    .y1(function(d){ return y1(d.open);})
 
 var areaAbove = d3.svg.area()
     .x(function(d) { return x(d.date);})
-    .y0(function(d){ return y(d.close);})
+    .y0(function(d){ return y0(d.close);})
     .y1(0);
 
 var valueline =
     d3.svg.line()
         .x(function(d){ return x(d.date);})
-        .y(function(d){ return y(d.close);});
+        .y(function(d){ return y0(d.close);});
 
 var valueline2 = d3.svg.line()
     .x(function(d) { return x(d.date);})
-    .y(function(d) { return y(d.open);})
+    .y(function(d) { return y1(d.open);})
 
 var svg = d3.select("body")
     .append("svg")
@@ -49,7 +56,7 @@ function make_x_axis(){
 
 function make_y_axis(){
     return d3.svg.axis()
-        .scale(y)
+        .scale(y0)
         .orient("left")
         .ticks(10)
 }
@@ -66,7 +73,8 @@ d3.tsv("./data/data.tsv", function(error, data){
 
     //scale the range of the data
     x.domain(d3.extent(data, function(d) { return d.date;}));
-    y.domain([0, d3.max(data, function(d){ return Math.max(d.close, d.open)})]);
+    y0.domain([0, d3.max(data, function(d){ return Math.max(d.close)})]);
+    y1.domain([0, d3.max(data, function(d){ return Math.max(d.open)})]);
 
 
     //draw the gridlines
@@ -90,6 +98,12 @@ d3.tsv("./data/data.tsv", function(error, data){
         .datum(data)
         .attr("class", "area")
         .attr("d", area);
+
+    //draw the fill for the second graph
+    /*svg.append("path")
+        .datum(data)
+        .attr("class", "area2")
+        .attr("d", area2 )*/
 
     //fill above
     svg.append("path")
@@ -122,9 +136,17 @@ d3.tsv("./data/data.tsv", function(error, data){
         .style("text-anchor", "middle")
         .text("Date");
 
+    //left vertical axis
     svg.append("g")
         .attr("class", "y axis")
-        .call(yAxis);
+        .call(yAxisLeft);
+
+    //right vertical axis
+    svg.append("g")
+        .attr("class", "y axis")
+        .attr("transform", "translate(" + width + " ,0)")
+        .style("fill", "indianred")
+        .call(yAxisRight);
 
     //adding the y axis label
     svg.append("text")
