@@ -1,4 +1,4 @@
-var margin = {top: 30, right: 20, bottom: 30, left: 50},
+var margin = {top: 30, right: 40, bottom: 30, left: 50},
     width = 600 - margin.left - margin.right,
     height = 270 - margin.top - margin.bottom;
 
@@ -13,10 +13,24 @@ console.log("y : " + y);
 var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(5);
 var yAxis = d3.svg.axis().scale(y).orient("left").ticks(5);
 
+var area = d3.svg.area()
+    .x(function(d) { return x(d.date);})
+    .y0(height)
+    .y1(function(d){ return y(d.close);});
+
+var areaAbove = d3.svg.area()
+    .x(function(d) { return x(d.date);})
+    .y0(function(d){ return y(d.close);})
+    .y1(0);
+
 var valueline =
     d3.svg.line()
         .x(function(d){ return x(d.date);})
         .y(function(d){ return y(d.close);});
+
+var valueline2 = d3.svg.line()
+    .x(function(d) { return x(d.date);})
+    .y(function(d) { return y(d.open);})
 
 var svg = d3.select("body")
     .append("svg")
@@ -47,11 +61,12 @@ d3.tsv("./data/data.tsv", function(error, data){
     data.forEach(function(d){
         d.date = parseDate(d.date);
         d.close = +d.close;
+        d.open = +d.open;
     });
 
     //scale the range of the data
     x.domain(d3.extent(data, function(d) { return d.date;}));
-    y.domain([0, d3.max(data, function(d){ return d.close})]);
+    y.domain([0, d3.max(data, function(d){ return Math.max(d.close, d.open)})]);
 
 
     //draw the gridlines
@@ -70,8 +85,28 @@ d3.tsv("./data/data.tsv", function(error, data){
             .tickFormat("")
     );
 
+    //draw the fill
+    svg.append("path")
+        .datum(data)
+        .attr("class", "area")
+        .attr("d", area);
+
+    //fill above
+    svg.append("path")
+        .datum(data)
+        .attr("class", "areaAbove")
+        .attr("d", areaAbove);
+
+    //main path
     svg.append("path") //add the valueline path
         .attr("d", valueline(data));
+
+    //second path
+    svg.append("path")
+        .attr("class", "line")
+        .style("stroke", "indianred")
+        .style("stroke-dasharray", ("3, 3"))
+        .attr("d", valueline2(data));
 
     svg.append("g")
         .attr("class", "x axis")

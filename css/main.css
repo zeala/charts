@@ -22,3 +22,15 @@ path{
 .grid path{
     stroke-width: 0;
 }
+
+.area{
+    fill: lightsteelblue;
+    opacity: 0.5;
+    stroke-width: 0;
+}
+
+.areaAbove{
+    fill: cornsilk;
+    opacity: 0.3;
+    stroke-width: 0;
+}
