@@ -46,7 +46,32 @@ d3.tsv("./data/data.tsv", function(error, data){
         .attr("transform", "translate(0," + height + ")")
         .call(xAxis);
 
+    //adding x axis label:
+    svg.append("text")
+        .attr("x", width/2)
+        .attr("y", height + margin.bottom)
+        .style("text-anchor", "middle")
+        .text("Date");
+
     svg.append("g")
         .attr("class", "y axis")
         .call(yAxis);
+
+    //adding the y axis label
+    svg.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0- margin.left)
+        .attr("x", 0 - (height/2))
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .text("Value");
+
+    //adding a title
+    svg.append("text")
+        .attr("x", width /2)
+        .attr("y", 0 - (margin.top / 2))
+        .attr("text-anchor", "middle")
+        .style("font-size", "16px")
+        .style("text-decoration", "underline")
+        .text("Value vs Date Graph");
 });
