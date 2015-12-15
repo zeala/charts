@@ -25,6 +25,21 @@ var svg = d3.select("body")
     .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+
+function make_x_axis(){
+    return d3.svg.axis()
+        .scale(x)
+        .orient('bottom')
+        .ticks(30)
+}
+
+function make_y_axis(){
+    return d3.svg.axis()
+        .scale(y)
+        .orient("left")
+        .ticks(10)
+}
+
 // get the data
 d3.tsv("./data/data.tsv", function(error, data){
     console.log("error : " + error);
@@ -38,6 +53,23 @@ d3.tsv("./data/data.tsv", function(error, data){
     x.domain(d3.extent(data, function(d) { return d.date;}));
     y.domain([0, d3.max(data, function(d){ return d.close})]);
 
+
+    //draw the gridlines
+    svg.append("g")
+        .attr("class", "grid")
+        .attr("transform", "translate(0, " + height + ")")
+        .call(make_x_axis()
+            .tickSize(-height, 0, 0)
+            .tickFormat("")
+    );
+
+    svg.append("g")
+        .attr("class", "grid")
+        .call(make_y_axis()
+            .tickSize(-width, 0, 0)
+            .tickFormat("")
+    );
+
     svg.append("path") //add the valueline path
         .attr("d", valueline(data));
 
@@ -45,6 +77,8 @@ d3.tsv("./data/data.tsv", function(error, data){
         .attr("class", "x axis")
         .attr("transform", "translate(0," + height + ")")
         .call(xAxis);
+
+
 
     //adding x axis label:
     svg.append("text")
@@ -74,4 +108,7 @@ d3.tsv("./data/data.tsv", function(error, data){
         .style("font-size", "16px")
         .style("text-decoration", "underline")
         .text("Value vs Date Graph");
+
+
 });
+
