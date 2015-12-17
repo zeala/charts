@@ -1,4 +1,4 @@
-var inter = setTimeout(function(){
+var inter = setInterval(function(){
     updateData();
 }, 5000);
 
@@ -28,10 +28,7 @@ var areaAbove = d3.svg.area()
 
 var valueline =
     d3.svg.line()
-        .x(function(d){
-            console.log("value line x ")
-            console.log(x(d.date));
-            return x(d.date);})
+        .x(function(d){ return x(d.date);})
         .y(function(d){ return y0(d.close);});
 
 var valueline2 = d3.svg.line()
@@ -61,7 +58,7 @@ function make_y_axis(){
 }
 
 // get the data
-d3.tsv("./data/data.tsv", function(error, data){
+d3.tsv("../data/data.tsv", function(error, data){
     data.forEach(function(d){
         d.date = parseDate(d.date);
         d.close = +d.close;
@@ -73,11 +70,6 @@ d3.tsv("./data/data.tsv", function(error, data){
     y0.domain([0, d3.max(data, function(d){ return Math.max(d.close)})]);
     y1.domain([0, d3.max(data, function(d){ return Math.max(d.open)})]);
 
-
-    var y0Max = d3.max(data, function(d){ return Math.max(d.close)});
-    var y1Max = d3.max(data, function(d){ return Math.max(d.open)});
-    console.log("y0max : " + y0Max);
-    console.log("y1max : " + y1Max);
 
     //draw the gridlines
     svg.append("g")
@@ -112,15 +104,6 @@ d3.tsv("./data/data.tsv", function(error, data){
     svg.append("path") //add the valueline path
         .attr("class", "line1")
         .attr("d", valueline(data));
-   /* svg.selectAll("dot1")
-        .data(data)
-        .enter().append("circle")
-        .attr("class", "dot1circle")
-        .attr("r", 3.5)
-        .attr("cx", function(d) { return x(d.date); })
-        .attr("cy", function(d) { return y0(d.close); });
-
-*/
 
     //second path
     svg.append("path")
@@ -128,16 +111,6 @@ d3.tsv("./data/data.tsv", function(error, data){
         .style("stroke", "indianred")
         .style("stroke-dasharray", ("3, 3"))
         .attr("d", valueline2(data));
-   /* svg.append("g")
-        .attr("class", "dot2")
-        .selectAll("dot2")
-        .data(data)
-        .enter().append("circle")
-        .attr("class", "dot2circle")
-        .attr("r", 3.5)
-        .attr("cx", function(d) { return x(d.date); })
-        .attr("cy", function(d) { return y1(d.open); });
-*/
 
     svg.append("g")
         .attr("class", "x axis")
@@ -155,12 +128,12 @@ d3.tsv("./data/data.tsv", function(error, data){
 
     //left vertical axis
     svg.append("g")
-        .attr("class", "y axisL axis")
+        .attr("class", "y axis")
         .call(yAxisLeft);
 
     //right vertical axis
     svg.append("g")
-        .attr("class", "y axisR axis")
+        .attr("class", "y axis")
         .attr("transform", "translate(" + width + " ,0)")
         .style("fill", "indianred")
         .call(yAxisRight);
@@ -186,24 +159,25 @@ d3.tsv("./data/data.tsv", function(error, data){
 
 });
 
-function updateData(){
-    d3.csv("data/data-alt.csv", function(error, data){
-            data.forEach(function (d){
-                d.date = parseDate(d.date);
-                d.close = +d.close;
-                d.open = +d.open
-            });
+function revertData() {
+    d3.tsv("../data/data.tsv", function (error, data) {
+        data.forEach(function (d) {
+            d.date = parseDate(d.date);
+            d.close = +d.close;
+            d.open = +d.open;
+        });
 
-            //Scale the range of the data
-            x.domain(d3.extent(data, function(d) { return d.date;}));
-            y0.domain([0, d3.max(data, function(d){ return d.close;})]);
-            y1.domain([0, d3.max(data, function(d) { return d.open;})])
+        //scale the range of the data
+        x.domain(d3.extent(data, function (d) {
+            return d.date;
+        }));
+        y0.domain([0, d3.max(data, function (d) {
+            return Math.max(d.close)
+        })]);
+        y1.domain([0, d3.max(data, function (d) {
+            return Math.max(d.open)
+        })]);
 
-        var y0Max = d3.max(data, function(d){ return d.close;});
-        var y1Max = d3.max(data, function(d) { return d.open;})
-
-        console.log("y0max " + y0Max);
-        console.log(" y1Max : " + y1Max)
 
         //select the section we want to apply the changes to
         var svg = d3.select("body").transition();
@@ -216,13 +190,65 @@ function updateData(){
         svg.select(".line2")
             .duration(750)
             .ease("elastic")
-            .attr("d", valueline2(data))
+            .attr("d", valueline2(data));
         svg.select(".x.axis")
             .duration(750)
             .call(xAxis);
-        svg.select(".axisL")
+        svg.select(".y.axis")
+            .duration(750)
             .call(yAxisLeft);
-        svg.select(".axisR")
+        svg.select(".y.axis")
+            .duration(750)
+            .call(yAxisRight);
+
+        //update the fill area
+        svg.select(".areaAbove")
+            .duration(750)
+            .ease("elastic")
+            .attr("d", areaAbove(data));
+
+        svg.select(".area")
+            .duration(750)
+            .ease("elastic")
+            .attr("d", area(data));
+    });
+}
+
+function updateData(){
+    d3.csv("../data/data-alt.csv", function(error, data){
+            data.forEach(function (d){
+                d.date = parseDate(d.date);
+                d.close = +d.close;
+                d.open = +d.open
+            });
+
+            //Scale the range of the data
+            x.domain(d3.extent(data, function(d) { return d.date;}));
+            y0.domain([0, d3.max(data, function(d){ return d.close;})]);
+            y1.domain([0, d3.max(data, function(d) { return d.open;})])
+
+
+
+        //select the section we want to apply the changes to
+        var svg = d3.select("body").transition();
+
+        //make the changes
+        svg.select(".line1")
+            .duration(750)
+            .ease("elastic")
+            .attr("d", valueline(data));
+        svg.select(".line2")
+            .duration(750)
+            .ease("elastic")
+            .attr("d", valueline2(data));
+        svg.select(".x.axis")
+            .duration(750)
+            .call(xAxis);
+        svg.select(".y.axis")
+            .duration(750)
+            .call(yAxisLeft);
+        svg.select(".y.axis")
+            .duration(750)
             .call(yAxisRight);
 
         //update the fill area
