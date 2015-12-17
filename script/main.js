@@ -20,11 +20,6 @@ var area = d3.svg.area()
     .y0(height)
     .y1(function(d){ return y0(d.close);});
 
-var area2 = d3.svg.area()
-    .x(function(d) { return x(d.date);})
-    .y0(height)
-    .y1(function(d){ return y1(d.open);})
-
 var areaAbove = d3.svg.area()
     .x(function(d) { return x(d.date);})
     .y0(function(d){ return y0(d.close);})
@@ -63,8 +58,6 @@ function make_y_axis(){
 
 // get the data
 d3.tsv("./data/data.tsv", function(error, data){
-    console.log("error : " + error);
-    console.log(data);
     data.forEach(function(d){
         d.date = parseDate(d.date);
         d.close = +d.close;
@@ -99,11 +92,6 @@ d3.tsv("./data/data.tsv", function(error, data){
         .attr("class", "area")
         .attr("d", area);
 
-    //draw the fill for the second graph
-    /*svg.append("path")
-        .datum(data)
-        .attr("class", "area2")
-        .attr("d", area2 )*/
 
     //fill above
     svg.append("path")
@@ -113,11 +101,12 @@ d3.tsv("./data/data.tsv", function(error, data){
 
     //main path
     svg.append("path") //add the valueline path
+        .attr("class", "line1")
         .attr("d", valueline(data));
 
     //second path
     svg.append("path")
-        .attr("class", "line")
+        .attr("class", "line2")
         .style("stroke", "indianred")
         .style("stroke-dasharray", ("3, 3"))
         .attr("d", valueline2(data));
@@ -168,4 +157,107 @@ d3.tsv("./data/data.tsv", function(error, data){
 
 
 });
+
+function revertData() {
+    d3.tsv("./data/data.tsv", function (error, data) {
+        data.forEach(function (d) {
+            d.date = parseDate(d.date);
+            d.close = +d.close;
+            d.open = +d.open;
+        });
+
+        //scale the range of the data
+        x.domain(d3.extent(data, function (d) {
+            return d.date;
+        }));
+        y0.domain([0, d3.max(data, function (d) {
+            return Math.max(d.close)
+        })]);
+        y1.domain([0, d3.max(data, function (d) {
+            return Math.max(d.open)
+        })]);
+
+
+        //select the section we want to apply the changes to
+        var svg = d3.select("body").transition();
+
+        //make the changes
+        svg.select(".line1")
+            .duration(750)
+            .ease("elastic")
+            .attr("d", valueline(data));
+        svg.select(".line2")
+            .duration(750)
+            .ease("elastic")
+            .attr("d", valueline2(data));
+        svg.select(".x.axis")
+            .duration(750)
+            .call(xAxis);
+        svg.select(".y.axis")
+            .duration(750)
+            .call(yAxisLeft);
+        svg.select(".y.axis")
+            .duration(750)
+            .call(yAxisRight);
+
+        //update the fill area
+        svg.select(".areaAbove")
+            .duration(750)
+            .ease("elastic")
+            .attr("d", areaAbove(data));
+
+        svg.select(".area")
+            .duration(750)
+            .ease("elastic")
+            .attr("d", area(data));
+    });
+}
+
+function updateData(){
+    d3.csv("data/data-alt.csv", function(error, data){
+            data.forEach(function (d){
+                d.date = parseDate(d.date);
+                d.close = +d.close;
+                d.open = +d.open
+            });
+
+            //Scale the range of the data
+            x.domain(d3.extent(data, function(d) { return d.date;}));
+            y0.domain([0, d3.max(data, function(d){ return d.close;})]);
+            y1.domain([0, d3.max(data, function(d) { return d.open;})])
+
+
+
+        //select the section we want to apply the changes to
+        var svg = d3.select("body").transition();
+
+        //make the changes
+        svg.select(".line1")
+            .duration(750)
+            .ease("elastic")
+            .attr("d", valueline(data));
+        svg.select(".line2")
+            .duration(750)
+            .ease("elastic")
+            .attr("d", valueline2(data));
+        svg.select(".x.axis")
+            .duration(750)
+            .call(xAxis);
+        svg.select(".y.axis")
+            .duration(750)
+            .call(yAxisLeft);
+        svg.select(".y.axis")
+            .duration(750)
+            .call(yAxisRight);
+
+        //update the fill area
+        svg.select(".areaAbove")
+            .duration(500)
+            .attr("d", areaAbove(data));
+
+        svg.select(".area")
+            .duration(500)
+            .attr("d", area(data));
+    });
+}
 
