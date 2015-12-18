@@ -27,15 +27,6 @@ var areaAbove = d3.svg.area()
     .y0(function(d){ return y0(d.close);})
     .y1(0);
 
-var valueline =
-    d3.svg.line()
-        .x(function(d){
-            return x(d.date);})
-        .y(function(d){ return y0(d.close);});
-
-var valueline2 = d3.svg.line()
-    .x(function(d) { return x(d.date);})
-    .y(function(d) { return y1(d.open);});
 
 var div = d3.select("body").append("div")
     .attr("class", "tooltip")
@@ -47,6 +38,20 @@ var svg = d3.select("body")
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+var valueline =
+    d3.svg.line()
+        .x(function(d){
+            return x(d.date);})
+        .y(function(d){ return y0(d.close);});
+
+var valueline2 = d3.svg.line()
+    .x(function(d) { return x(d.date);})
+    .y(function(d) { return y1(d.open);});
+
+
+
 
 
 function make_x_axis(){
@@ -83,6 +88,30 @@ d3.tsv("./data/data.tsv", function(error, data){
     console.log("y0max : " + y0Max);
     console.log("y1max : " + y1Max);
 
+    //line gradient
+    svg.append("linearGradient")
+        .attr("id", "line-gradient")
+        .attr("gradientUnits", "userSpaceOnUse")
+        .attr("x1", 0).attr("y1", y0(0))
+        .attr("x2", 0).attr("y2", y0(1000))
+        .selectAll("stop")
+        .data([
+            {offset: "0%", color: "red"},
+            {offset: "40%", color: "red"},
+            {offset: "40%", color: "navy"},
+            {offset: "62%", color: "navy"},
+            {offset: "62%", color: "teal"},
+            {offset: "100%", color: "teal"}
+        ])
+        .enter().append("stop")
+        .attr("offset", function(d) {
+            console.log("offset : " + d.offset);
+            return d.offset; })
+        .attr("stop-color", function(d) {
+            console.log("color : " + d.color)
+            return d.color; });
+
+
     //draw the gridlines
     svg.append("g")
         .attr("class", "grid")
@@ -114,14 +143,18 @@ d3.tsv("./data/data.tsv", function(error, data){
 
     //main path
     svg.append("path") //add the valueline path
-        .attr("class", "line1")
-        .attr("d", valueline(data));
+        .attr("class", "line1 line-with-gradient")
+        .attr("d", valueline(data))
+        .attr("id", "mainLine");
 
     svg.selectAll(".circle1")
         .data(data)
         .enter().append("circle")
-        .filter(function(d){ return d.close < 400 })
-        .style("fill", "red")
+        .style("fill", function(d){
+            if (d.close <= 400) { return 'red'}
+            else if (d.close >= 620) { return 'teal'}
+            else { return 'navy'; }
+        })
             .attr("class", "circle1")
             .attr("r", 5)
 
@@ -155,19 +188,11 @@ d3.tsv("./data/data.tsv", function(error, data){
     //second path
     svg.append("path")
         .attr("class", "line2")
+        .attr("id", "redLine")
         .style("stroke", "indianred")
         .style("stroke-dasharray", ("3, 3"))
         .attr("d", valueline2(data));
-   /* svg.append("g")
-        .attr("class", "dot2")
-        .selectAll("dot2")
-        .data(data)
-        .enter().append("circle")
-        .attr("class", "dot2circle")
-        .attr("r", 3.5)
-        .attr("cx", function(d) { return x(d.date); })
-        .attr("cy", function(d) { return y1(d.open); });
-*/
+
 
     svg.append("g")
         .attr("class", "x axis")
