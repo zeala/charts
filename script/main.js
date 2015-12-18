@@ -1,12 +1,13 @@
-var inter = setTimeout(function(){
+/*var inter = setTimeout(function(){
     updateData();
-}, 5000);
+}, 5000);*/
 
 var margin = {top: 30, right: 40, bottom: 30, left: 50},
     width = 600 - margin.left - margin.right,
     height = 270 - margin.top - margin.bottom;
 
 var parseDate = d3.time.format("%d-%b-%y").parse;
+var formatTime = d3.time.format("%e %B");
 
 var x = d3.time.scale().range([0, width]);
 var y0 = d3.scale.linear().range([height, 0]);
@@ -29,14 +30,16 @@ var areaAbove = d3.svg.area()
 var valueline =
     d3.svg.line()
         .x(function(d){
-            console.log("value line x ")
-            console.log(x(d.date));
             return x(d.date);})
         .y(function(d){ return y0(d.close);});
 
 var valueline2 = d3.svg.line()
     .x(function(d) { return x(d.date);})
-    .y(function(d) { return y1(d.open);})
+    .y(function(d) { return y1(d.open);});
+
+var div = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
 
 var svg = d3.select("body")
     .append("svg")
@@ -66,6 +69,7 @@ d3.tsv("./data/data.tsv", function(error, data){
         d.date = parseDate(d.date);
         d.close = +d.close;
         d.open = +d.open;
+        d.link = d.link;
     });
 
     //scale the range of the data
@@ -112,15 +116,41 @@ d3.tsv("./data/data.tsv", function(error, data){
     svg.append("path") //add the valueline path
         .attr("class", "line1")
         .attr("d", valueline(data));
-   /* svg.selectAll("dot1")
+
+    svg.selectAll(".circle1")
         .data(data)
         .enter().append("circle")
-        .attr("class", "dot1circle")
-        .attr("r", 3.5)
-        .attr("cx", function(d) { return x(d.date); })
-        .attr("cy", function(d) { return y0(d.close); });
+        .filter(function(d){ return d.close < 400 })
+        .style("fill", "red")
+            .attr("class", "circle1")
+            .attr("r", 5)
 
-*/
+            .attr("cx", function(d) { return x(d.date); })
+            .attr("cy", function(d) { return y0(d.close); })
+            .on("mouseover", function(d) {
+                console.log(d);
+                console.log(d.link)
+                div.transition()
+                    .duration(500)
+                    .style("opacity", 0);
+                div.transition()
+                    .duration(200)
+                    .style("opacity", .9);
+                div.html(
+                    '<a href="' + d.link +'" target="_blank">' +
+                        formatTime(d.date) +
+                    "</a>" +
+                    "<br/>" + d.close)
+                    .style("left", (d3.event.pageX) + "px")
+                    .style("top", (d3.event.pageY - 28) + "px");
+            })
+            .on("mouseout", function(d) {
+                div.transition()
+                    .duration(500)
+                    .style("opacity", 0);
+            });;
+
+
 
     //second path
     svg.append("path")
@@ -203,21 +233,37 @@ function updateData(){
         var y1Max = d3.max(data, function(d) { return d.open;})
 
         console.log("y0max " + y0Max);
-        console.log(" y1Max : " + y1Max)
+        console.log(" y1Max : " + y1Max);
+        console.log( svg.selectAll("circle1"))
 
         //select the section we want to apply the changes to
-        var svg = d3.select("body").transition();
+        //var svg = d3.select("body").transition();
 
+        //var circles = svg.selectAll("circle");
         //make the changes
         svg.select(".line1")
+            .transition()
             .duration(750)
             .ease("elastic")
             .attr("d", valueline(data));
         svg.select(".line2")
+            .transition()
             .duration(750)
             .ease("elastic")
-            .attr("d", valueline2(data))
+            .attr("d", valueline2(data));
+
+        svg.selectAll(".circle1")
+            .data(data)
+            .transition()
+            .duration(750)
+            .ease("elastic")
+            .attr("r", 3.5)
+            .attr("cx", function(d) { return x(d.date); })
+            .attr("cy", function(d) { return y0(d.close); });
+
+
         svg.select(".x.axis")
+            .transition()
             .duration(750)
             .call(xAxis);
         svg.select(".axisL")
@@ -227,10 +273,12 @@ function updateData(){
 
         //update the fill area
         svg.select(".areaAbove")
+            .transition()
             .duration(500)
             .attr("d", areaAbove(data));
 
         svg.select(".area")
+            .transition()
             .duration(500)
             .attr("d", area(data));
     });
