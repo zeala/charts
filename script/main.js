@@ -2,9 +2,9 @@
     updateData();
 }, 5000);*/
 
-var margin = {top: 30, right: 40, bottom: 30, left: 50},
+var margin = {top: 30, right: 40, bottom: 60, left: 50},
     width = 600 - margin.left - margin.right,
-    height = 270 - margin.top - margin.bottom;
+    height = 300 - margin.top - margin.bottom;
 
 var parseDate = d3.time.format("%d-%b-%y").parse;
 var formatTime = d3.time.format("%e %B");
@@ -70,11 +70,15 @@ function make_y_axis(){
 
 // get the data
 d3.tsv("./data/data.tsv", function(error, data){
-    data.forEach(function(d){
+    data.forEach(function(d, i){
         d.date = parseDate(d.date);
+        d.dateFormatted = moment(d.date).format('DD/MMM/YYYY');
         d.close = +d.close;
         d.open = +d.open;
-        d.link = d.link;
+        d.url = d.link;
+        d.diff = Math.round((d.close - d.open) * 100) / 100;
+        d.rowIndex = i;
+        console.log("d.rowIndex : " + d.rowIndex);
     });
 
     //scale the range of the data
@@ -211,11 +215,13 @@ d3.tsv("./data/data.tsv", function(error, data){
     //left vertical axis
     svg.append("g")
         .attr("class", "y axisL axis")
+        .attr("id", "leftAxis")
         .call(yAxisLeft);
 
     //right vertical axis
     svg.append("g")
         .attr("class", "y axisR axis")
+        .attr("id", "rightAxis")
         .attr("transform", "translate(" + width + " ,0)")
         .style("fill", "indianred")
         .call(yAxisRight);
@@ -238,7 +244,22 @@ d3.tsv("./data/data.tsv", function(error, data){
         .style("text-decoration", "underline")
         .text("Value vs Date Graph");
 
+    svg.append("text")
+        .attr("x", 0)
+        .attr("y", height + margin.top + 10)
+        .attr("class", "legend")
+        .attr("fill", "indianred")
+        .on("click", function(){
+            var active = redLine.active ? false : true;
+            var newOpacity = active ? 0 : 1;
+            d3.select("#redLine").style("opacity", newOpacity);
+            d3.select("#rightAxis").style("opacity", newOpacity);
+// Update whether or not the elements are active
+            redLine.active = active;
+        })
+        .text("Toggle Open Values")
 
+    TableController.tabulate(data, ["dateFormatted", "close", "open", "diff", "url"])
 });
 
 function updateData(){

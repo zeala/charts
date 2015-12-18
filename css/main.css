@@ -59,3 +59,26 @@ div.tooltip{
     border-radius: 3px;
    /* pointer-events: none;*/
 }
+
+.legend {
+    font-size: 16px;
+    font-weight: bold;
+    text-anchor: start;
+}
+
+td, th{
+    padding: 1px 10px;
+}
+
+table{
+    border-collapse:collapse;
+    border:1px solid grey;
+}
+
+table td{
+    border:1px solid grey;
+}
+
+table td.url{
+    background: lightyellow;
+}
