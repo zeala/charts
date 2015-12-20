@@ -1,6 +1,6 @@
-/*var inter = setTimeout(function(){
+var inter = setTimeout(function(){
     updateData();
-}, 5000);*/
+}, 5000);
 
 var margin = {top: 30, right: 40, bottom: 60, left: 50},
     width = 600 - margin.left - margin.right,
