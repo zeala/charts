@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Collapsible Tree Example</title>
+    <link rel="stylesheet" type="text/css" href="css/tree.css" >
+
+    </link>
+</head>
+<body>
+<!-- load the d3.js library -->
+<script src="script/linkFactory.js"></script>
+<script src="script/nodeFactory.js"></script>
+<script src="script/utils/xmlTojson.js"></script>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
+
+    var duration = 750;
+
+    // ************** Generate the tree diagram *****************
+    var margin = {top: 40, right: 120, bottom: 20, left: 120},
+            width = 960 - margin.right - margin.left,
+            height = 500 - margin.top - margin.bottom;
+    var i = 0;
+    var root;
+    var duration = 750;
+
+    var tree = d3.layout.tree()
+            .size([height, width]);
+    var diagonal = d3.svg.diagonal()
+            .projection(function(d) {
+                return [d.x, d.y]; });
+
+
+    var svg = d3.select("body").append("svg")
+            .attr("width", width + margin.right + margin.left)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    //load data
+    loadData();
+
+    function loadData(){
+        d3.json("./data/treeData.json", function(error, treeData){
+            if (error){
+                console.log(error);
+                return;
+            }
+            root = treeData[0];
+            root.x0 = width / 2;
+            root.y0 = 0;
+            update(root);
+        })
+    }
+
+    d3.select(self.frameElement).style("height", "500px");
+
+    function update(source) {
+        // Compute the new tree layout.
+        console.log(source);
+        var nodes = tree.nodes(root).reverse();
+
+
+        console.log("root reverse");
+        console.log(root);
+        console.log("nodes");
+        console.log(nodes);
+
+        // Normalize for fixed-depth.
+        nodes.forEach(function(d) { d.y = d.depth * 100;});
+        // Declare the nodes
+        var node = createNodes(svg, nodes, source);
+        console.log("node:");
+        console.log(node);
+        // Enter the nodes.
+
+    }
+</script>
+</body>
+</html>

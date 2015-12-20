@@ -1,0 +1,65 @@
+[
+    {
+        "name": "Top Level",
+        "parent": "null",
+        "children": [
+            {
+                "name": "Level 2: A",
+                "parent": "Top Level",
+                "children": [
+                    {
+                        "name": "Son of A",
+                        "parent": "Level 2: A",
+                        "children": [
+                            {
+                                "name": "grandchild of A",
+                                "parent": "Level 3: A",
+                                "children": [
+                                    {
+                                        "name": "g-g of A",
+                                        "parent": "Level 4: A"
+                                    },
+                                    {
+                                        "name": "g-g of A",
+                                        "parent": "Level 4: b"
+                                    }
+                                    ]
+                            },
+                            {
+                                "name": "grandchild of A",
+                                "parent": "Level 3: A"
+                            },
+                            {
+                                "name": "grandchild of A",
+                                "parent": "Level 3: A"
+                            },
+                            {
+                                "name": "grandchild of A",
+                                "parent": "Level 3: A"
+                            }
+
+                        ]
+                    },
+                    {
+                        "name": "Daughter of A",
+                        "parent": "Level 2: A",
+                        "children": [
+                            {
+                                "name": "Son of A",
+                                "parent": "Level 2: A"
+                            },
+                            {
+                                "name": "Daughter of A",
+                                "parent": "Level 2: A"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Level 2: B",
+                "parent": "Top Level"
+            }
+        ]
+    }
+]

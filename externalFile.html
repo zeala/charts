@@ -22,169 +22,141 @@
     </style>
 </head>
 <body>
+<div class="fileContent"></div>
+<div class="treeLayout"></div>
+
 <!-- load the d3.js library -->
 <script src="script/utils/xmlTojson.js"></script>
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script>
 
-    var duration = 750;
-    var treeData = [];
+    var dataset;
 
-    // ************** Generate the tree diagram *****************
-    var margin = {top: 40, right: 120, bottom: 20, left: 120},
-            width = 960 - margin.right - margin.left,
-            height = 500 - margin.top - margin.bottom;
-    var i = 0;
-    var root;
-    var duration = 750;
+    var tree = d3.layout.tree(),
+            nodes,
+            links;
 
-    var tree = d3.layout.tree()
-            .size([height, width]);
     var diagonal = d3.svg.diagonal()
-            .projection(function(d) {
-                return [d.x, d.y]; });
+            .projection(function(d) { return [d.y, d.x]; });
+    //reversed coordinates to make a horizontal tree
 
+    d3.xml("./data/data.xml",
+            function(error, data) {
 
-    var svg = d3.select("body").append("svg")
-            .attr("width", width + margin.right + margin.left)
-            .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                if (error) { return console.warn(error); }
 
+                console.log(data);
 
-    d3.select(self.frameElement).style("height", "500px");
+                dataset = xmlToJSON2(data);
 
-    //update(root);
+                console.log("dataset");
+                console.log(dataset)
 
-    var jsonStr;
-    d3.xml("./data/data.xml", function (error, xml){
-        console.log(error)
-        console.log(xml);
+                //console.log(dataset);
 
-        jsonStr = xmlToJson(xml);
-        treeData = jsonStr.node;
+                var graphic = d3.select("div.fileContent > svg");
+                if ((!graphic.attr("viewBox"))
+                        &&!!graphic.attr("width")
+                        &&!!graphic.attr("height")){
 
-        root = treeData;
-        root.x0 = width / 2;
-        root.y0 = 0;
+                    graphic.attr("viewBox", "0 0 " +
+                            graphic.attr("width") + " " +
+                            graphic.attr("height"));
+                    graphic.attr("preserveAspectRatio", "xMidYMin meet");
+                }
 
-       /* console.log("root.node : " + root.node);
-        console.log(root['node'])*/
-       console.log("root");
-        console.log(root)
-        update(root);
+                drawTree(d3.select("div.treeLayout"), dataset);
 
+            }); //end of d3.xml()
+
+    //a recursive function to convert xml to JSON:
+    //attributes become properties;
+    //children are grouped in an array.
+    var nestByTagName = d3.nest().key(function(d){
+        return d.tagName;
     });
 
+    function drawTree(selection, data) {
+
+        var svg = selection.append("svg").append("g")
+                .attr("transform", "translate(20,20)");
+        var styles = window.getComputedStyle(selection.node());
+        var height = parseInt(styles["height"]);
+        var width = parseInt(styles["width"]);
 
 
-    function update(source) {
+        tree.size([height - 40, width - 100]);
+        //reversed coordinates!
+        nodes = tree.nodes(data);
+        links = tree.links(nodes);
 
-        // Compute the new tree layout.
-        console.log("source :" + source);
-        console.log(source);
 
-        var nodes = tree.nodes(root);//.reverse();
-        var links = tree.links(nodes);
+        var link = svg.selectAll("path.link")
+                .data(links)
+                .enter().append("path")
+                .attr("class", "link")
+                .attr("d", diagonal);
 
-        console.log(nodes);
-
-        // Normalize for fixed-depth.
-        nodes.forEach(function(d) { d.y = d.depth * 100;});
-        // Declare the nodesâ€¦
         var node = svg.selectAll("g.node")
-                .data(nodes, function(d) { return d.id || (d.id = ++i); });
-        // Enter the nodes.
-        var nodeEnter = node.enter().append("g")
+                .data(nodes)
+                .enter().append("g")
                 .attr("class", "node")
                 .attr("transform", function(d) {
-                    console.log(source);
-                    return "translate(" + source.x0 + "," + source.y0 + ")"; })
-                .on("click", function (d){
-
-                    if (d.children) {
-                        d._children = d.children;
-                        d.children = null;
-                    } else {
-                        d.children = d._children;
-                        d._children = null;
-                    }
-                    console.log(d)
-                    update(d);
+                    return "translate(" + d.y + "," + d.x + ")";
                 });
-        nodeEnter.append("circle")
-                .attr("r", 10)
-                .style("fill", function(d){
-                    return d._children ? "lightsteelblue" : "#fff";
-                })
+        //reversed coordinates!
 
-        ;
-        nodeEnter.append("text")
-                .attr("y", function(d) {
-                    return d.children || d._children ? -18 : 18; })
-                .attr("dy", ".35em")
-                .attr("text-anchor", "middle")
-                .text(function(d) { return d.name; })
-                .style("fill-opacity", 1);
+        node.append("circle")
+                .attr("r", 4.5);
 
+        node.append("text")
+                .attr("dx", function(d) { return d.children ? -8 : 8; })
+                .attr("dy", function(d) { return d.children ? "0.5em" : 0; })
+                .attr("text-anchor", function(d) { return d.children ? "end" : "start"; })
+                .text(function(d) { return d.tagName; });
 
-        // Transition nodes to their new position.
-        var nodeUpdate = node.transition()
-                .duration(duration)
-                .attr("transform", function(d) {
-                    return "translate(" + d.x + "," + d.y + ")";
-                });
-        nodeUpdate.select("circle")
-                .attr("r", 10)
-                .style("fill", function(d) {
-                    return d._children ? "lightsteelblue" : "#fff"; });
-        nodeUpdate.select("text")
-                .style("fill-opacity", 1);
+        var tooltip = d3.select("body").append("div")
+                .attr("class", "tooltip")
+                .style({position:"absolute",
+                    visibility:"hidden"});
 
+        node.on("click", function(d) {
 
+            var content ="";
+            if (d.attributes){
+                content +=
+                        d3.entries(d.attributes).map(function(o){
+                            return "<dt>"+o.key+":</dt><dd>" +
+                                    o.value + "</dd>";
+                        } ).join(" ");
+            }
+            if (d.textContent) {
+                content += "<dt>Text</dt><dd>"+
+                        d.textContent+"</dd>";
+            }
+            tooltip.html(content);
 
+            var matrix = this.getScreenCTM();
+            //reversed coordinates!
+            //console.log(matrix);
+            tooltip.style("visibility", "visible")
+                    .style("left",
+                    Math.min((window.pageXOffset + matrix.e),
+                            (window.innerWidth -
+                            parseInt(
+                                    window.getComputedStyle(tooltip.node())["width"]))
+                    )+ "px")
+                    .style("top",
+                    (window.pageYOffset + matrix.f + 30) + "px");
 
-        // Transition exiting nodes to the parent's new position.
-        var nodeExit = node.exit().transition()
-                .duration(duration)
-                .attr("transform", function(d) { return "translate(" + source.x +
-                        "," + source.y + ")"; })
-                .remove();
+        });
 
-        nodeExit.select("circle")
-                .attr("r", 1e-6);
-        nodeExit.select("text")
-                .style("fill-opacity", 1e-6);
-
-        // Update the linksâ€¦
-        var link = svg.selectAll("path.link")
-                .data(links, function(d) { return d.target.id; });
-
-        // Enter any new links at the parent's previous position.
-        link.enter().insert("path", "g")
-                .attr("class", "link")
-                .attr("d", function(d) {
-                    var o = {x: source.x0, y: source.y0};
-                    return diagonal({source: o, target: o});
-                });
-        // Transition links to their new position.
-        link.transition()
-                .duration(duration)
-                .attr("d", diagonal);
-        // Transition exiting nodes to the parent's new position.
-        link.exit().transition()
-                .duration(duration)
-                .attr("d", function(d) {
-                    var o = {x: source.x, y: source.y};
-                    return diagonal({source: o, target: o});
-                })
-                .remove();
-        // Stash the old positions for transition.
-        nodes.forEach(function(d) {
-            d.x0 = d.x;
-            d.y0 = d.y;
+        tooltip.on("click", function(d) {
+            d3.select(this).style("visibility", "hidden");
         });
     }
 </script>
+
+
 </body>
 </html>
