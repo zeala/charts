@@ -3,12 +3,35 @@
     <meta charset="UTF-8">
     <title></title>
     <link rel="stylesheet" href="css/main.css"/>
+    <link rel="stylesheet" href="node_modules/jquery-ui/themes/base/jquery-ui.css"/>
 </head>
 <body>
+    <div id="graphContainer">
 
+    </div>
+
+    <div id="panelContainer" >
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Panel title</h3>
+            </div>
+            <div class="panel-body">
+                <div id="tableBodyContainer"></div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="script/jquery-ui.min.js"></script>
     <script type="text/javascript" src="script/moment.js"></script>
     <script type="text/javascript" src="script/d3.js"></script>
     <script type="text/javascript" src="script/table.js"></script>
     <script type="text/javascript" src="script/main.js"></script>
+    <script>
+        $(function() {
+            $( "#panelContainer" ).sortable({
+                handle: ".panel-heading"
+            });
+        });
+    </script>
 </body>
 </html>

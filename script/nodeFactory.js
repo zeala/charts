@@ -18,15 +18,17 @@ createNodes = function(svg, dataNodes, source){
         .attr("class", "node")
         .attr("transform", function(d) {
             return "translate(" + source.x0 + "," + source.y0 + ")"; })
-        .attr("draggable", true)
         .call(d3.behavior.drag()
             .origin(function(d) { return d;})
             .on("dragstart", function() {
                 duration = 0;
                 this.parentNode.appendChild(this);
-                d3.event.sourceEvent.stopPropagation();})
+                d3.event.sourceEvent.stopPropagation();
+                d3.select(this).on("dragend", dragend)
+            })
             .on("drag", dragmove))
-            .on("dragend", dragend)
+            .on("dragend", function(d){ alert("drag end")})
+
         .on("click", clickHandler);
     nodeEnter.append("circle")
         .attr("r", 10)
@@ -99,7 +101,7 @@ function drop(d){
 }
 
 function dragmove(d) {
-
+    d3.event.sourceEvent.stopPropagation();
     d3.select(this).attr("transform",
         "translate(" + (d.x = d3.event.x  ) + "," + (d.y = d3.event.y)  + ")");
 

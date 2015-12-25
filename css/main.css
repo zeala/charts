@@ -1,5 +1,11 @@
 body{ font: 12px Arial;}
 
+#tableContainer{
+    position: relative;
+    width: 500px;
+    resize: both;
+}
+
 path{
     stroke: steelblue;
     stroke-width: 2;
@@ -73,6 +79,7 @@ td, th{
 table{
     border-collapse:collapse;
     border:1px solid grey;
+    max-height: 400px;
 }
 
 table td{

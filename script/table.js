@@ -1,8 +1,9 @@
 TableController = {};
 
 TableController.tabulate = function(data, columns){
-    var table = d3.select("body").append("table")
-        .attr("style", "margin-left: 250px");
+    var table = d3.select("#tableBodyContainer").append("table")
+            .attr("height", "200px")
+        /*.attr("style", "margin-left: 250px")*/;
     var thead = table.append("thead");
     var tbody = table.append("tbody");
 

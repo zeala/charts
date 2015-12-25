@@ -1,3 +1,12 @@
+/*$(document).ready(function(){
+    console.log("DOCUMENT READY");
+    console.log( $('#panelContainer'));
+    $('#panelContainer').sortable({
+        handle: '.panel-heading',
+    })
+});
+*/
+
 var inter = setTimeout(function(){
     updateData();
 }, 5000);
@@ -28,11 +37,11 @@ var areaAbove = d3.svg.area()
     .y1(0);
 
 
-var div = d3.select("body").append("div")
+var div = d3.select("#graphContainer").append("div")
     .attr("class", "tooltip")
     .style("opacity", 0);
 
-var svg = d3.select("body")
+var svg = d3.select("#graphContainer")
     .append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
@@ -78,7 +87,6 @@ d3.tsv("./data/data.tsv", function(error, data){
         d.url = d.link;
         d.diff = Math.round((d.close - d.open) * 100) / 100;
         d.rowIndex = i;
-        console.log("d.rowIndex : " + d.rowIndex);
     });
 
     //scale the range of the data
