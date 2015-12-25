@@ -1,15 +1,29 @@
-/*$(document).ready(function(){
-    console.log("DOCUMENT READY");
-    console.log( $('#panelContainer'));
-    $('#panelContainer').sortable({
-        handle: '.panel-heading',
+$(function() {
+    $( "#panelContainer" ).sortable({
+        handle: ".panel-heading"
+    });
+    $( '#updateRuntimeBtn').on('click', function(){
+        console.log(" updat at runtime button clicked");
+        console.log(isUpdatingAtRuntime);
+        console.log(this);
+        console.log(" this. value : " + this.value);
+        isUpdatingAtRuntime = !isUpdatingAtRuntime;
+        $(this).prop('value', (isUpdatingAtRuntime ? "stop updates" : " start updates"));
+        //clearInterval(updateInteval)
+        if (isUpdatingAtRuntime){
+            updateInteval = setInterval(updateDataRuntile, 1000);
+
+        }else{
+            clearInterval(updateInteval)
+        }
     })
 });
-*/
+var updateInteval;
+var isUpdatingAtRuntime = false;
 
 var inter = setTimeout(function(){
     updateData();
-}, 5000);
+}, 1000);
 
 var margin = {top: 30, right: 40, bottom: 60, left: 50},
     width = 600 - margin.left - margin.right,
@@ -59,10 +73,6 @@ var valueline2 = d3.svg.line()
     .x(function(d) { return x(d.date);})
     .y(function(d) { return y1(d.open);});
 
-
-
-
-
 function make_x_axis(){
     return d3.svg.axis()
         .scale(x)
@@ -77,8 +87,11 @@ function make_y_axis(){
         .ticks(10)
 }
 
+var tableData;
+
 // get the data
 d3.tsv("./data/data.tsv", function(error, data){
+    tableData = data;
     data.forEach(function(d, i){
         d.date = parseDate(d.date);
         d.dateFormatted = moment(d.date).format('DD/MMM/YYYY');
@@ -270,6 +283,77 @@ d3.tsv("./data/data.tsv", function(error, data){
     TableController.tabulate(data, ["dateFormatted", "close", "open", "diff", "url"])
 });
 
+function updateDataRuntile(){
+    /*d3.csv("data/data-alt.csv", function(error, data){
+        data.forEach(function (d){
+            d.date = parseDate(d.date);
+            d.close = +d.close;
+            d.open = +d.open
+        });*/
+
+        updateTableData();
+
+        //Scale the range of the data
+        x.domain(d3.extent(data, function(d) { return d.date;}));
+        y0.domain([0, d3.max(data, function(d){ return d.close;})]);
+        y1.domain([0, d3.max(data, function(d) { return d.open;})])
+
+        var y0Max = d3.max(data, function(d){ return d.close;});
+        var y1Max = d3.max(data, function(d) { return d.open;})
+
+        console.log("y0max " + y0Max);
+        console.log(" y1Max : " + y1Max);
+        console.log( svg.selectAll("circle1"))
+
+        //select the section we want to apply the changes to
+        //var svg = d3.select("body").transition();
+
+        //var circles = svg.selectAll("circle");
+        //make the changes
+        svg.select(".line1")
+            .transition()
+            .duration(750)
+            .ease("elastic")
+            .attr("d", valueline(data));
+        svg.select(".line2")
+            .transition()
+            .duration(750)
+            .ease("elastic")
+            .attr("d", valueline2(data));
+
+        svg.selectAll(".circle1")
+            .data(data)
+            .transition()
+            .duration(750)
+            .ease("elastic")
+            .attr("r", 3.5)
+            .attr("cx", function(d) { return x(d.date); })
+            .attr("cy", function(d) { return y0(d.close); });
+
+
+        svg.select(".x.axis")
+            .transition()
+            .duration(750)
+            .call(xAxis);
+        svg.select(".axisL")
+            .call(yAxisLeft);
+        svg.select(".axisR")
+            .call(yAxisRight);
+
+        //update the fill area
+        svg.select(".areaAbove")
+            .transition()
+            .duration(500)
+            .attr("d", areaAbove(data));
+
+        svg.select(".area")
+            .transition()
+            .duration(500)
+            .attr("d", area(data));
+    //});
+}
+
+
 function updateData(){
     d3.csv("data/data-alt.csv", function(error, data){
             data.forEach(function (d){
@@ -338,3 +422,6 @@ function updateData(){
     });
 }
 
+function updateTableData(){
+    console.log(tableData)
+}
