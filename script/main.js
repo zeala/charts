@@ -3,27 +3,25 @@ $(function() {
         handle: ".panel-heading"
     });
     $( '#updateRuntimeBtn').on('click', function(){
-        console.log(" updat at runtime button clicked");
-        console.log(isUpdatingAtRuntime);
-        console.log(this);
-        console.log(" this. value : " + this.value);
         isUpdatingAtRuntime = !isUpdatingAtRuntime;
         $(this).prop('value', (isUpdatingAtRuntime ? "stop updates" : " start updates"));
         //clearInterval(updateInteval)
         if (isUpdatingAtRuntime){
-            updateInteval = setInterval(updateDataRuntile, 1000);
+            updateInteval = setInterval(updateDataRuntile, 800);
 
         }else{
-            clearInterval(updateInteval)
+            clearInterval(updateInteval);
+            duration = 500;
         }
     })
 });
 var updateInteval;
 var isUpdatingAtRuntime = false;
-
+var duration = 500;
+/*
 var inter = setTimeout(function(){
     updateData();
-}, 1000);
+}, 1000);*/
 
 var margin = {top: 30, right: 40, bottom: 60, left: 50},
     width = 600 - margin.left - margin.right,
@@ -181,7 +179,7 @@ d3.tsv("./data/data.tsv", function(error, data){
             else { return 'navy'; }
         })
             .attr("class", "circle1")
-            .attr("r", 5)
+            .attr("r", 3.5)
 
             .attr("cx", function(d) { return x(d.date); })
             .attr("cy", function(d) { return y0(d.close); })
@@ -294,12 +292,12 @@ function updateDataRuntile(){
         updateTableData();
 
         //Scale the range of the data
-        x.domain(d3.extent(data, function(d) { return d.date;}));
-        y0.domain([0, d3.max(data, function(d){ return d.close;})]);
-        y1.domain([0, d3.max(data, function(d) { return d.open;})])
+        x.domain(d3.extent(tableData, function(d) { return d.date;}));
+        y0.domain([0, d3.max(tableData, function(d){ return d.close;})]);
+        y1.domain([0, d3.max(tableData, function(d) { return d.open;})])
 
-        var y0Max = d3.max(data, function(d){ return d.close;});
-        var y1Max = d3.max(data, function(d) { return d.open;})
+        var y0Max = d3.max(tableData, function(d){ return d.close;});
+        var y1Max = d3.max(tableData, function(d) { return d.open;})
 
         console.log("y0max " + y0Max);
         console.log(" y1Max : " + y1Max);
@@ -312,19 +310,19 @@ function updateDataRuntile(){
         //make the changes
         svg.select(".line1")
             .transition()
-            .duration(750)
+            .duration(duration)
             .ease("elastic")
-            .attr("d", valueline(data));
+            .attr("d", valueline(tableData));
         svg.select(".line2")
             .transition()
-            .duration(750)
+            .duration(duration)
             .ease("elastic")
-            .attr("d", valueline2(data));
+            .attr("d", valueline2(tableData));
 
         svg.selectAll(".circle1")
-            .data(data)
+            .data(tableData)
             .transition()
-            .duration(750)
+            .duration(duration)
             .ease("elastic")
             .attr("r", 3.5)
             .attr("cx", function(d) { return x(d.date); })
@@ -333,7 +331,7 @@ function updateDataRuntile(){
 
         svg.select(".x.axis")
             .transition()
-            .duration(750)
+            .duration(duration)
             .call(xAxis);
         svg.select(".axisL")
             .call(yAxisLeft);
@@ -343,13 +341,13 @@ function updateDataRuntile(){
         //update the fill area
         svg.select(".areaAbove")
             .transition()
-            .duration(500)
-            .attr("d", areaAbove(data));
+            .duration(duration)
+            .attr("d", areaAbove(tableData));
 
         svg.select(".area")
             .transition()
-            .duration(500)
-            .attr("d", area(data));
+            .duration(duration)
+            .attr("d", area(tableData));
     //});
 }
 
@@ -381,19 +379,19 @@ function updateData(){
         //make the changes
         svg.select(".line1")
             .transition()
-            .duration(750)
+            .duration(duration)
             .ease("elastic")
             .attr("d", valueline(data));
         svg.select(".line2")
             .transition()
-            .duration(750)
+            .duration(duration)
             .ease("elastic")
             .attr("d", valueline2(data));
 
         svg.selectAll(".circle1")
             .data(data)
             .transition()
-            .duration(750)
+            .duration(duration)
             .ease("elastic")
             .attr("r", 3.5)
             .attr("cx", function(d) { return x(d.date); })
@@ -402,7 +400,8 @@ function updateData(){
 
         svg.select(".x.axis")
             .transition()
-            .duration(750)
+            .duration(duration)
+            .ease("elastic")
             .call(xAxis);
         svg.select(".axisL")
             .call(yAxisLeft);
@@ -412,16 +411,30 @@ function updateData(){
         //update the fill area
         svg.select(".areaAbove")
             .transition()
-            .duration(500)
+            .duration(duration)
+            .ease("elastic")
             .attr("d", areaAbove(data));
 
         svg.select(".area")
             .transition()
-            .duration(500)
+            .duration(duration)
+            .ease("elastic")
             .attr("d", area(data));
     });
 }
 
 function updateTableData(){
+    duration = 700;//400;
+    var lastItem = tableData[0];
+    var lastItemDate = new Date(lastItem.date);
+    console.log("lastItemDate");
+    console.log(lastItemDate)
+    console.log(new Date(lastItemDate));
+    var newItemDate = lastItemDate.setDate(lastItemDate.getDate() + 1);
+
+    var firstitem = tableData.pop();
+    console.log(firstitem);
+    firstitem.date = newItemDate;
+    tableData.unshift(firstitem);
     console.log(tableData)
 }
