@@ -170,7 +170,7 @@ d3.tsv("./data/data.tsv", function(error, data){
         .enter().append("circle")
         .style("fill", function(d){
             if (d.close <= 400) { return 'red'}
-            else if (d.close >= 620) { return 'teal'}
+            else if (d.close >= 600) { return 'teal'}
             else { return 'navy'; }
         })
             .attr("class", "circle1")
@@ -304,7 +304,7 @@ function updateDataRuntime(){
             .data(tableData)
             .style("fill", function(d){
                 if (d.close <= 400) { return 'red'}
-                else if (d.close >= 620) { return 'teal'}
+                else if (d.close >= 600) { return 'teal'}
                 else { return 'navy'; }})
             .transition()
             .duration(duration)
@@ -346,6 +346,9 @@ function updateTableData(){
     var lastItemDate = new Date(lastItem.date);
     var newItemDate = lastItemDate.setDate(lastItemDate.getDate() + 1);
     var firstitem = tableData.pop();
-    firstitem.date = newItemDate;
+    firstitem.date = new Date(newItemDate);
+    firstitem.dateFormatted = moment(firstitem.date).format('DD/MMM/YYYY');
     tableData.unshift(firstitem);
+    TableController.tableData = tableData;
+    TableController.updateData();
 }
