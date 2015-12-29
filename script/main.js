@@ -106,9 +106,6 @@ d3.tsv("./data/data.tsv", function(error, data){
 
     var y0Max = d3.max(data, function(d){ return Math.max(d.close)});
     var y1Max = d3.max(data, function(d){ return Math.max(d.open)});
-    console.log("y0max : " + y0Max);
-    console.log("y1max : " + y1Max);
-
     //line gradient
     svg.append("linearGradient")
         .attr("id", "line-gradient")
@@ -182,8 +179,6 @@ d3.tsv("./data/data.tsv", function(error, data){
             .attr("cx", function(d) { return x(d.date); })
             .attr("cy", function(d) { return y0(d.close); })
             .on("mouseover", function(d) {
-                console.log(d);
-                console.log(d.link)
                 div.transition()
                     .duration(500)
                     .style("opacity", 0);
@@ -307,6 +302,10 @@ function updateDataRuntime(){
 
         svg.selectAll(".circle1")
             .data(tableData)
+            .style("fill", function(d){
+                if (d.close <= 400) { return 'red'}
+                else if (d.close >= 620) { return 'teal'}
+                else { return 'navy'; }})
             .transition()
             .duration(duration)
             .ease("elastic")

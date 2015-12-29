@@ -32,6 +32,7 @@ TableController.tabulate = function(data, columns){
         .append("td")
         .attr("class", function(d){ return d.column})
         .attr("style", "font-family: Courier")
+        .attr("class", "tableCell")
         .html(function(d){ return d.value})
         .on("mouseover", function(d, i){
             console.log("i" + i);
