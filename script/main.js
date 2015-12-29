@@ -7,7 +7,7 @@ $(function() {
         $(this).prop('value', (isUpdatingAtRuntime ? "stop updates" : " start updates"));
         //clearInterval(updateInteval)
         if (isUpdatingAtRuntime){
-            updateInteval = setInterval(updateDataRuntile, 800);
+            updateInteval = setInterval(updateDataRuntime, 800);
 
         }else{
             clearInterval(updateInteval);
@@ -18,14 +18,12 @@ $(function() {
 var updateInteval;
 var isUpdatingAtRuntime = false;
 var duration = 500;
-/*
-var inter = setTimeout(function(){
-    updateData();
-}, 1000);*/
+var durationElastic = 500;
+var radius = 2;
 
 var margin = {top: 30, right: 40, bottom: 60, left: 50},
     width = 600 - margin.left - margin.right,
-    height = 300 - margin.top - margin.bottom;
+    height = 250 - margin.top - margin.bottom;
 
 var parseDate = d3.time.format("%d-%b-%y").parse;
 var formatTime = d3.time.format("%e %B");
@@ -179,7 +177,7 @@ d3.tsv("./data/data.tsv", function(error, data){
             else { return 'navy'; }
         })
             .attr("class", "circle1")
-            .attr("r", 3.5)
+            .attr("r", radius)
 
             .attr("cx", function(d) { return x(d.date); })
             .attr("cy", function(d) { return y0(d.close); })
@@ -281,13 +279,7 @@ d3.tsv("./data/data.tsv", function(error, data){
     TableController.tabulate(data, ["dateFormatted", "close", "open", "diff", "url"])
 });
 
-function updateDataRuntile(){
-    /*d3.csv("data/data-alt.csv", function(error, data){
-        data.forEach(function (d){
-            d.date = parseDate(d.date);
-            d.close = +d.close;
-            d.open = +d.open
-        });*/
+function updateDataRuntime(){
 
         updateTableData();
 
@@ -299,12 +291,6 @@ function updateDataRuntile(){
         var y0Max = d3.max(tableData, function(d){ return d.close;});
         var y1Max = d3.max(tableData, function(d) { return d.open;})
 
-        console.log("y0max " + y0Max);
-        console.log(" y1Max : " + y1Max);
-        console.log( svg.selectAll("circle1"))
-
-        //select the section we want to apply the changes to
-        //var svg = d3.select("body").transition();
 
         //var circles = svg.selectAll("circle");
         //make the changes
@@ -315,7 +301,7 @@ function updateDataRuntile(){
             .attr("d", valueline(tableData));
         svg.select(".line2")
             .transition()
-            .duration(duration)
+            .duration(durationElastic)
             .ease("elastic")
             .attr("d", valueline2(tableData));
 
@@ -324,14 +310,14 @@ function updateDataRuntile(){
             .transition()
             .duration(duration)
             .ease("elastic")
-            .attr("r", 3.5)
+            .attr("r", radius)
             .attr("cx", function(d) { return x(d.date); })
             .attr("cy", function(d) { return y0(d.close); });
 
 
         svg.select(".x.axis")
             .transition()
-            .duration(duration)
+            .duration(durationElastic)
             .call(xAxis);
         svg.select(".axisL")
             .call(yAxisLeft);
@@ -352,89 +338,15 @@ function updateDataRuntile(){
 }
 
 
-function updateData(){
-    d3.csv("data/data-alt.csv", function(error, data){
-            data.forEach(function (d){
-                d.date = parseDate(d.date);
-                d.close = +d.close;
-                d.open = +d.open
-            });
 
-            //Scale the range of the data
-            x.domain(d3.extent(data, function(d) { return d.date;}));
-            y0.domain([0, d3.max(data, function(d){ return d.close;})]);
-            y1.domain([0, d3.max(data, function(d) { return d.open;})])
-
-        var y0Max = d3.max(data, function(d){ return d.close;});
-        var y1Max = d3.max(data, function(d) { return d.open;})
-
-        console.log("y0max " + y0Max);
-        console.log(" y1Max : " + y1Max);
-        console.log( svg.selectAll("circle1"))
-
-        //select the section we want to apply the changes to
-        //var svg = d3.select("body").transition();
-
-        //var circles = svg.selectAll("circle");
-        //make the changes
-        svg.select(".line1")
-            .transition()
-            .duration(duration)
-            .ease("elastic")
-            .attr("d", valueline(data));
-        svg.select(".line2")
-            .transition()
-            .duration(duration)
-            .ease("elastic")
-            .attr("d", valueline2(data));
-
-        svg.selectAll(".circle1")
-            .data(data)
-            .transition()
-            .duration(duration)
-            .ease("elastic")
-            .attr("r", 3.5)
-            .attr("cx", function(d) { return x(d.date); })
-            .attr("cy", function(d) { return y0(d.close); });
-
-
-        svg.select(".x.axis")
-            .transition()
-            .duration(duration)
-            .ease("elastic")
-            .call(xAxis);
-        svg.select(".axisL")
-            .call(yAxisLeft);
-        svg.select(".axisR")
-            .call(yAxisRight);
-
-        //update the fill area
-        svg.select(".areaAbove")
-            .transition()
-            .duration(duration)
-            .ease("elastic")
-            .attr("d", areaAbove(data));
-
-        svg.select(".area")
-            .transition()
-            .duration(duration)
-            .ease("elastic")
-            .attr("d", area(data));
-    });
-}
 
 function updateTableData(){
-    duration = 700;//400;
+    duration = 0;//400;
+    durationElastic = 500;
     var lastItem = tableData[0];
     var lastItemDate = new Date(lastItem.date);
-    console.log("lastItemDate");
-    console.log(lastItemDate)
-    console.log(new Date(lastItemDate));
     var newItemDate = lastItemDate.setDate(lastItemDate.getDate() + 1);
-
     var firstitem = tableData.pop();
-    console.log(firstitem);
     firstitem.date = newItemDate;
     tableData.unshift(firstitem);
-    console.log(tableData)
 }

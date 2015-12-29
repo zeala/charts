@@ -1,9 +1,15 @@
 body{ font: 12px Arial;}
 
-#tableContainer{
-    position: relative;
+#tableBodyContainer{
     width: 500px;
+    height: 300px;
     resize: both;
+    position: static;;
+    overflow-y: scroll;
+}
+
+#panelContainer{
+    margin-left: 30px;
 }
 
 path{
